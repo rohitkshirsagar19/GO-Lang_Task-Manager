@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "name": "Learn Go",
+    "done": true
+  },
+  {
+    "id": 2,
+    "name": "Build CLI",
+    "done": true
+  },
+  {
+    "id": 3,
+    "name": "CI/CD",
+    "done": false
+  }
+]

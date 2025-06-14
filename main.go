@@ -1,56 +1,115 @@
 package main
 
-import "fmt"
-
-// GO Data Structure
-type Task struct {
-	ID     int
-	Name   string
-	Status bool
-}
+import (
+	"GO-Lang_Task-Manager/tasks"
+	"fmt"
+	"os"
+	"strconv"
+)
 
 func main() {
-
-	// Variable declaration
-	var name string = "Task-Manager"
-
-	// Print Statement
-	fmt.Println("Welcome to", name)
-
-	// Function call
-	sum := add(5, 10)
-	fmt.Println("Sum of 5 and 10 is:", sum)
-
-	// Loop to print numbers from 1 to 5
-	for i := 0; i < 5; i++ {
-		fmt.Println("Number: ", i+1)
+	filename := "tasks.json"
+	taskList, err := tasks.LoadTasks(filename)
+	if err != nil && !os.IsNotExist(err) {
+		fmt.Println("Error loading tasks:", err)
+		return
 	}
 
-	// Create a Task instance
-	tasks := []Task{
-		{ID: 1, Name: "Write Code", Status: true},
-		{ID: 2, Name: "Review Code", Status: false},
-		{ID: 3, Name: "Test Code", Status: true},
+	if len(os.Args) < 2 {
+		printUsage()
+		return
 	}
 
-	// Apend task
-	tasks = append(tasks, Task{ID: 4, Name: "Deploy Code", Status: false})
-
-	// Loop over the tasks
-	for _, task := range tasks {
-		fmt.Printf("ID: %d , Name: %s , Status: %v \n", task.ID, task.Name, task.Status)
+	switch os.Args[1] {
+	case "add":
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: add <task_name>")
+			return
+		}
+		addTask(&taskList, os.Args[2])
+	case "list":
+		listTasks(taskList)
+	case "done":
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: done <task_id>")
+			return
+		}
+		id, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("Invalid ID:", err)
+			return
+		}
+		markDone(&taskList, id)
+	case "delete":
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: delete <task_id>")
+			return
+		}
+		id, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("Invalid ID:", err)
+			return
+		}
+		deleteTask(&taskList, id)
+	default:
+		printUsage()
+		return
 	}
 
-	// Mapping
-	taskStatus := map[int]bool{
-		1: true,
-		0: false,
+	if err := tasks.SaveTasks(filename, taskList); err != nil {
+		fmt.Println("Error saving tasks:", err)
 	}
-	fmt.Println("Task 1 done?", taskStatus[1])
-
 }
 
-// Function to add two integers
-func add(a int, b int) int {
-	return a + b
+func addTask(taskList *[]tasks.Task, name string) {
+	id := 1
+	if len(*taskList) > 0 {
+		id = (*taskList)[len(*taskList)-1].ID + 1
+	}
+	*taskList = append(*taskList, tasks.Task{ID: id, Name: name, Done: false})
+	fmt.Println("Added task:", name)
+}
+
+func listTasks(taskList []tasks.Task) {
+	if len(taskList) == 0 {
+		fmt.Println("No tasks")
+		return
+	}
+	for _, task := range taskList {
+		status := "Pending"
+		if task.Done {
+			status = "Done"
+		}
+		fmt.Printf("ID: %d, Name: %s, Status: %s\n", task.ID, task.Name, status)
+	}
+}
+
+func markDone(taskList *[]tasks.Task, id int) {
+	for i, task := range *taskList {
+		if task.ID == id {
+			(*taskList)[i].Done = true
+			fmt.Println("Marked task", id, "as done")
+			return
+		}
+	}
+	fmt.Println("Task", id, "not found")
+}
+
+func deleteTask(taskList *[]tasks.Task, id int) {
+	for i, task := range *taskList {
+		if task.ID == id {
+			*taskList = append((*taskList)[:i], (*taskList)[i+1:]...)
+			fmt.Println("Deleted task", id)
+			return
+		}
+	}
+	fmt.Println("Task", id, "not found")
+}
+
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println("  add <task_name>    Add a new task")
+	fmt.Println("  list               List all tasks")
+	fmt.Println("  done <task_id>     Mark task as done")
+	fmt.Println("  delete <task_id>   Delete a task")
 }

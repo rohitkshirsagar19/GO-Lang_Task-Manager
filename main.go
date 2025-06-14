@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 func main() {
 	filename := "tasks.json"
 	taskList, err := tasks.LoadTasks(filename)
 	if err != nil && !os.IsNotExist(err) {
-		fmt.Println("Error loading tasks:", err)
+		color.Red("✗ Error loading tasks: %v", err)
 		return
 	}
 
@@ -23,42 +25,47 @@ func main() {
 	switch os.Args[1] {
 	case "add":
 		if len(os.Args) < 3 {
-			fmt.Println("Usage: add <task_name>")
+			color.Yellow("⚠ Usage: add <task_name>")
 			return
 		}
+		color.Cyan("⏳ Adding task...")
 		addTask(&taskList, os.Args[2])
 	case "list":
 		listTasks(taskList)
 	case "done":
 		if len(os.Args) < 3 {
-			fmt.Println("Usage: done <task_id>")
+			color.Yellow("⚠ Usage: done <task_id>")
 			return
 		}
 		id, err := strconv.Atoi(os.Args[2])
 		if err != nil {
-			fmt.Println("Invalid ID:", err)
+			color.Red("✗ Invalid ID: %v", err)
 			return
 		}
+		color.Cyan("⏳ Marking task as done...")
 		markDone(&taskList, id)
 	case "delete":
 		if len(os.Args) < 3 {
-			fmt.Println("Usage: delete <task_id>")
+			color.Yellow("⚠ Usage: delete <task_id>")
 			return
 		}
 		id, err := strconv.Atoi(os.Args[2])
 		if err != nil {
-			fmt.Println("Invalid ID:", err)
+			color.Red("✗ Invalid ID: %v", err)
 			return
 		}
+		color.Cyan("⏳ Deleting task...")
 		deleteTask(&taskList, id)
 	default:
 		printUsage()
 		return
 	}
 
+	color.Cyan("⏳ Saving tasks...")
 	if err := tasks.SaveTasks(filename, taskList); err != nil {
-		fmt.Println("Error saving tasks:", err)
+		color.Red("✗ Error saving tasks: %v", err)
 	}
+	color.Green("✓ Tasks saved successfully")
 }
 
 func addTask(taskList *[]tasks.Task, name string) {
@@ -67,49 +74,73 @@ func addTask(taskList *[]tasks.Task, name string) {
 		id = (*taskList)[len(*taskList)-1].ID + 1
 	}
 	*taskList = append(*taskList, tasks.Task{ID: id, Name: name, Done: false})
-	fmt.Println("Added task:", name)
+	color.Green("✓ Added task: %s", name)
 }
 
 func listTasks(taskList []tasks.Task) {
 	if len(taskList) == 0 {
-		fmt.Println("No tasks")
+		color.Yellow("⚠ No tasks found")
 		return
 	}
+
+	// Table header
+	fmt.Println()
+	color.Cyan("┌───────┬───────────────────────────┬──────────┐")
+	color.Cyan("│ ID    │ Task Name                 │ Status   │")
+	color.Cyan("├───────┬───────────────────────────┬──────────┤")
+
+	// Table rows
 	for _, task := range taskList {
 		status := "Pending"
 		if task.Done {
 			status = "Done"
 		}
-		fmt.Printf("ID: %d, Name: %s, Status: %s\n", task.ID, task.Name, status)
+		name := task.Name
+		if len(name) > 25 {
+			name = name[:22] + "..."
+		}
+		if task.Done {
+			color.Green("│ %-5d │ %-25s │ %-8s │", task.ID, name, status)
+		} else {
+			color.Yellow("│ %-5d │ %-25s │ %-8s │", task.ID, name, status)
+		}
 	}
+
+	// Table footer
+	color.Cyan("└───────┴───────────────────────────┴──────────┘")
+	fmt.Println()
 }
 
 func markDone(taskList *[]tasks.Task, id int) {
 	for i, task := range *taskList {
 		if task.ID == id {
 			(*taskList)[i].Done = true
-			fmt.Println("Marked task", id, "as done")
+			color.Green("✓ Marked task %d as done", id)
 			return
 		}
 	}
-	fmt.Println("Task", id, "not found")
+	color.Red("✗ Task %d not found", id)
 }
 
 func deleteTask(taskList *[]tasks.Task, id int) {
 	for i, task := range *taskList {
 		if task.ID == id {
 			*taskList = append((*taskList)[:i], (*taskList)[i+1:]...)
-			fmt.Println("Deleted task", id)
+			color.Green("✓ Deleted task %d", id)
 			return
 		}
 	}
-	fmt.Println("Task", id, "not found")
+	color.Red("✗ Task %d not found", id)
 }
 
 func printUsage() {
+	fmt.Println()
+	color.Cyan("=== Task Manager CLI ===")
+	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  add <task_name>    Add a new task")
-	fmt.Println("  list               List all tasks")
-	fmt.Println("  done <task_id>     Mark task as done")
-	fmt.Println("  delete <task_id>   Delete a task")
+	color.Green("  add <task_name>    Add a new task")
+	color.Green("  list               List all tasks")
+	color.Green("  done <task_id>     Mark task as done")
+	color.Green("  delete <task_id>   Delete a task")
+	fmt.Println()
 }

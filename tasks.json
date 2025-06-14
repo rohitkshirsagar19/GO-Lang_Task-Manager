@@ -1,10 +1,5 @@
 [
   {
-    "id": 1,
-    "name": "Learn Go",
-    "done": true
-  },
-  {
     "id": 2,
     "name": "Build CLI",
     "done": true
@@ -12,6 +7,16 @@
   {
     "id": 3,
     "name": "CI/CD",
+    "done": true
+  },
+  {
+    "id": 4,
+    "name": "Build Network Simulator",
+    "done": false
+  },
+  {
+    "id": 5,
+    "name": "Deploy on AWS",
     "done": false
   }
 ]

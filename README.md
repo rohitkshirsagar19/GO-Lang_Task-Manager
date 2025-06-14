@@ -3,14 +3,7 @@
 
 A simple command-line task manager written in Go. Manage your tasks with commands to add, list, mark as done, or delete tasks. Tasks are saved in a JSON file (`tasks.json`).
 
-## Project Structure
-GO-Lang_Task-Manager/
-├── go.mod
-├── main.go
-├── README.md
-├── tasks/
-│   └── tasks.go
-└── tasks.json
+
 
 ## Features
 

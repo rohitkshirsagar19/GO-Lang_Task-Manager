@@ -1,8 +1,4 @@
-## Screenshot
 
-Here’s how the Task Manager CLI looks in action:
-
-![Task Manager CLI Screenshot](SS/looks.jpeg)
 # GO Task Manager
 
 A simple command-line task manager written in Go. Manage your tasks with commands to add, list, mark as done, or delete tasks. Tasks are saved in a JSON file (`tasks.json`).
@@ -52,3 +48,9 @@ Run the program with the following commands:
 ```bash
 ./GO-Lang_Task-Manager <command> [arguments]
 ```
+
+## Screenshot
+
+Here’s how the Task Manager CLI looks in action:
+
+![Task Manager CLI Screenshot](SS/looks.jpeg)
